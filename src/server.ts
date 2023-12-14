@@ -3,7 +3,7 @@ import express, { Request, Response } from "express";
 import { ScrapeGoogleSearch } from "./google-search-scraper";
 
 const app = express();
-const port = 3000;
+const port = 3002;
 
 app.use(express.json());
 
