@@ -45,6 +45,7 @@ export async function ScrapeGoogleSearch(urls: string[]) {
   const results: SearchResult[] = [];
   const crawler = new PlaywrightCrawler({
     requestQueue,
+    maxConcurrency: 1,
     async requestHandler({ request, page }) {
       console.log(`Processing ${request.url}...`);
       const title = await page.title();

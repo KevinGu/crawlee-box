@@ -11,7 +11,10 @@ app.post("/scrape-google-search", async (req: Request, res: Response) => {
   const { queries, gl, hl, lr, uule } = req.body;
 
   const urls = [];
-  for (const query of queries) {
+  console.log("queries>>>>>", queries)
+  const queriesArray = JSON.parse(queries);
+  for (const query of queriesArray) {
+    console.log("query>>>>>", query);
     const url = `http://www.google.com/search?hl=${hl}&q=${encodeURIComponent(
       query
     )}&gl=${gl}&lr=${lr}&uule=${uule}`;
