@@ -6,7 +6,6 @@
         "outDir": "dist",
         "noUnusedLocals": false,
         "lib": ["DOM"],
-        "allowImportingTsExtensions": true
     },
     "include": [
         "./src/**/*"
