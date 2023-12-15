@@ -1,6 +1,6 @@
 // server.ts
 import express, { Request, Response } from "express";
-import { ScrapeGoogleSearch } from "./google-search-scraper";
+import { ScrapeGoogleSearch } from "./google-search-scraper.js";
 
 const app = express();
 const port = 3002;

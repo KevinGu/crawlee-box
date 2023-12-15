@@ -1,5 +1,5 @@
 // For more information, see https://crawlee.dev/
-import { PlaywrightCrawler, RequestQueue, ProxyConfiguration } from "crawlee";
+import { PlaywrightCrawler, RequestQueue, Configuration } from "crawlee";
 
 interface faq {
   question: string;
@@ -43,132 +43,134 @@ export async function ScrapeGoogleSearch(urls: string[]) {
   }
 
   const results: SearchResult[] = [];
-  const proxyConfiguration = new ProxyConfiguration({
-    proxyUrls: [""]
-  });
-  const crawler = new PlaywrightCrawler({
-    proxyConfiguration,
-    requestQueue,
-    maxConcurrency: 1,
-    maxRequestRetries:10,
-    async requestHandler({ request, page }) {
-      console.log(`Processing ${request.url}...`);
-      const title = await page.title();
+  const crawler = new PlaywrightCrawler(
+    {
+      requestQueue,
+      async requestHandler({ request, page }) {
+        console.log(`Processing ${request.url}...`);
+        const title = await page.title();
 
-      //results total
-      const resultTotal = await page.textContent("#result-stats");
-      const resultTotalNumber = extractResultTotal(resultTotal || "") || 0;
+        //results total
+        const resultTotal = await page.textContent("#result-stats");
+        const resultTotalNumber = extractResultTotal(resultTotal || "") || 0;
 
-      //related keywords
-      let elements = await page.$$(".EIaa9b a");
-      const relatedKeywords = [];
-      for (const element of elements) {
-        const keyword = await element.textContent();
-        if (keyword) {
-          relatedKeywords.push(keyword);
-        }
-      }
-
-      //featured snippets
-      let featuredSnippets = {
-        content: [] as string[],
-        url: "",
-        title: "",
-      };
-      const featuredSnippetsSection = await page.$(".ULSxyf");
-      if (featuredSnippetsSection) {
-        const featuredUrlEle = await featuredSnippetsSection?.$(".yuRUbf a");
-        const featuredUrl = (await featuredUrlEle?.getAttribute("href")) || "";
-        const featuredTitleEle = await featuredSnippetsSection?.$(".yuRUbf h3");
-        const featuredTitle = (await featuredTitleEle?.textContent()) || "";
-
-        elements = await featuredSnippetsSection.$$(".di3YZe li");
-        const snippets = [];
+        //related keywords
+        let elements = await page.$$(".EIaa9b a");
+        const relatedKeywords = [];
         for (const element of elements) {
-          const featuredSnippetContent = await element.textContent();
-          if (featuredSnippetContent) {
-            snippets.push(featuredSnippetContent);
+          const keyword = await element.textContent();
+          if (keyword) {
+            relatedKeywords.push(keyword);
           }
         }
 
-        featuredSnippets = {
-          content: snippets,
-          url: featuredUrl,
-          title: featuredTitle,
+        //featured snippets
+        let featuredSnippets = {
+          content: [] as string[],
+          url: "",
+          title: "",
         };
-      }
-
-      //faq
-      const faqResults: faq[] = [];
-      // 直接选择包含 "People also ask" 的区域
-      const faqSection = await page.$(".MjjYud:has-text('People also ask')");
-      if (faqSection) {
-        // 选择该区域内的问题
-        const faqsEle = await faqSection.$$(".wQiwMc");
-        for (const faqEle of faqsEle) {
-          const questionEle = await faqEle.$(".JlqpRe span");
-          const question = await questionEle?.textContent();
-          const answerEle = await faqEle.$(".wDYxhc span");
-          const answer = await answerEle?.textContent();
-          const urlEle = await faqEle.$(".yuRUbf a");
-          const url = await urlEle?.getAttribute("href");
-          const titleEle = await faqEle.$(".yuRUbf h3");
-          const title = await titleEle?.textContent();
-          if (question && answer) {
-            const faqObj: faq = { question, answer, url, title };
-            faqResults.push(faqObj);
-          }
-        }
-      }
-
-      //organic search results
-      const organicResults: organicResult[] = [];
-      const organicSection = await page.$$(".MjjYud");
-      if (organicSection) {
-        for (const element of organicSection) {
-          const urlEle = await element.$("a");
-          const url = await urlEle?.getAttribute("href");
-          const titleEle = await element.$("h3");
-          const title = await titleEle?.textContent();
-          const descEle = await element.$(
-            ".VwiC3b.yXK7lf.lVm3ye.r025kc.hJNv6b.Hdw6tb"
+        const featuredSnippetsSection = await page.$(".ULSxyf");
+        if (featuredSnippetsSection) {
+          const featuredUrlEle = await featuredSnippetsSection?.$(".yuRUbf a");
+          const featuredUrl =
+            (await featuredUrlEle?.getAttribute("href")) || "";
+          const featuredTitleEle = await featuredSnippetsSection?.$(
+            ".yuRUbf h3"
           );
-          const desc = await descEle?.textContent();
-          const emList: string[] = [];
-          const emEles = await descEle?.$$("em");
-          if (emEles) {
-            for (const element of emEles) {
-              const em = await element.textContent();
-              if (em) {
-                emList.push(em.toLocaleLowerCase());
-              }
+          const featuredTitle = (await featuredTitleEle?.textContent()) || "";
+
+          elements = await featuredSnippetsSection.$$(".di3YZe li");
+          const snippets = [];
+          for (const element of elements) {
+            const featuredSnippetContent = await element.textContent();
+            if (featuredSnippetContent) {
+              snippets.push(featuredSnippetContent);
             }
           }
-          const posistion = organicResults.length + 1;
-          if (url && title && desc) {
-            const organicResultObj: organicResult = {
-              url,
-              title,
-              desc,
-              emphasizedKeywords: Array.from(new Set(emList)),
-              posistion,
-            };
-            organicResults.push(organicResultObj);
+
+          featuredSnippets = {
+            content: snippets,
+            url: featuredUrl,
+            title: featuredTitle,
+          };
+        }
+
+        //faq
+        const faqResults: faq[] = [];
+        // 直接选择包含 "People also ask" 的区域
+        const faqSection = await page.$(".MjjYud:has-text('People also ask')");
+        if (faqSection) {
+          // 选择该区域内的问题
+          const faqsEle = await faqSection.$$(".wQiwMc");
+          for (const faqEle of faqsEle) {
+            const questionEle = await faqEle.$(".JlqpRe span");
+            const question = await questionEle?.textContent();
+            const answerEle = await faqEle.$(".wDYxhc span");
+            const answer = await answerEle?.textContent();
+            const urlEle = await faqEle.$(".yuRUbf a");
+            const url = await urlEle?.getAttribute("href");
+            const titleEle = await faqEle.$(".yuRUbf h3");
+            const title = await titleEle?.textContent();
+            if (question && answer) {
+              const faqObj: faq = { question, answer, url, title };
+              faqResults.push(faqObj);
+            }
           }
         }
-      }
 
-      results.push({
-        resultTotal: resultTotalNumber,
-        url: request.url,
-        title,
-        featuredSnippets: featuredSnippets,
-        peopleAlsoAsk: faqResults,
-        relatedQueries: relatedKeywords,
-        organicResults,
-      });
+        //organic search results
+        const organicResults: organicResult[] = [];
+        const organicSection = await page.$$(".MjjYud");
+        if (organicSection) {
+          for (const element of organicSection) {
+            const urlEle = await element.$("a");
+            const url = await urlEle?.getAttribute("href");
+            const titleEle = await element.$("h3");
+            const title = await titleEle?.textContent();
+            const descEle = await element.$(
+              ".VwiC3b.yXK7lf.lVm3ye.r025kc.hJNv6b.Hdw6tb"
+            );
+            const desc = await descEle?.textContent();
+            const emList: string[] = [];
+            const emEles = await descEle?.$$("em");
+            if (emEles) {
+              for (const element of emEles) {
+                const em = await element.textContent();
+                if (em) {
+                  emList.push(em.toLocaleLowerCase());
+                }
+              }
+            }
+            const posistion = organicResults.length + 1;
+            if (url && title && desc) {
+              const organicResultObj: organicResult = {
+                url,
+                title,
+                desc,
+                emphasizedKeywords: Array.from(new Set(emList)),
+                posistion,
+              };
+              organicResults.push(organicResultObj);
+            }
+          }
+        }
+
+        results.push({
+          resultTotal: resultTotalNumber,
+          url: request.url,
+          title,
+          featuredSnippets: featuredSnippets,
+          peopleAlsoAsk: faqResults,
+          relatedQueries: relatedKeywords,
+          organicResults,
+        });
+      },
     },
-  });
+    new Configuration({
+      persistStorage: false,
+    })
+  );
 
   try {
     await crawler.run(urls);
