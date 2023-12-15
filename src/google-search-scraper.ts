@@ -1,5 +1,5 @@
 // For more information, see https://crawlee.dev/
-import { PlaywrightCrawler, RequestQueue } from "crawlee";
+import { PlaywrightCrawler, RequestQueue, ProxyConfiguration } from "crawlee";
 
 interface faq {
   question: string;
@@ -43,9 +43,14 @@ export async function ScrapeGoogleSearch(urls: string[]) {
   }
 
   const results: SearchResult[] = [];
+  const proxyConfiguration = new ProxyConfiguration({
+    proxyUrls: [""]
+  });
   const crawler = new PlaywrightCrawler({
+    proxyConfiguration,
     requestQueue,
     maxConcurrency: 1,
+    maxRequestRetries:10,
     async requestHandler({ request, page }) {
       console.log(`Processing ${request.url}...`);
       const title = await page.title();

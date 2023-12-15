@@ -10,16 +10,15 @@ app.use(express.json());
 app.post("/scrape-google-search", async (req: Request, res: Response) => {
   const { queries, gl, hl, lr, uule } = req.body;
 
-  const urls = [];
-  console.log("queries>>>>>", queries)
-  const queriesArray = JSON.parse(queries);
-  for (const query of queriesArray) {
+  const urls: string[] = [];
+  // const queryArray = JSON.parse(queries);
+  queries.forEach((query: string) => {
     console.log("query>>>>>", query);
     const url = `http://www.google.com/search?hl=${hl}&q=${encodeURIComponent(
       query
     )}&gl=${gl}&lr=${lr}&uule=${uule}`;
     urls.push(url);
-  }
+  });
 
   try {
     const result = await ScrapeGoogleSearch(urls);
