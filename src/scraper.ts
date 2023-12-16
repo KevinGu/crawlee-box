@@ -13,16 +13,18 @@ export async function scrape<T>(
   const requestQueue = await RequestQueue.open(queueId);
   requestQueue.timeoutSecs = 120;
 
+  const proxyUrls = process.env.PROXY_URLS
+    ? process.env.PROXY_URLS.split(",")
+    : [];
+
   const proxyConfiguration = proxy
     ? new ProxyConfiguration({
-        proxyUrls: process.env.PROXY_URLS
-          ? process.env.PROXY_URLS.split(",")
-          : [],
+        proxyUrls: proxyUrls,
       })
     : undefined;
 
   if (proxyConfiguration) {
-    console.log("Using proxy");
+    console.log("Using proxy: ", proxyUrls);
   }
 
   for (const url of urls) {
