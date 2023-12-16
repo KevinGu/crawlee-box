@@ -40,12 +40,6 @@ export async function scrape<T>(
     requestQueue,
     maxRequestRetries: 10,
     requestHandlerTimeoutSecs: 120,
-    launchContext: {
-      // Set the Firefox browser to be used by the crawler.
-      // If launcher option is not specified here,
-      // default Chromium browser will be used.
-      launcher: webkit,
-    },
     async requestHandler({ request, page }) {
       await requestHandler(request, page, results); // 传递泛型结果数组给处理函数
     },
