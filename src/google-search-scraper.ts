@@ -1,4 +1,4 @@
-import { scrap } from "./scraper.js";
+import { scrape } from "./scraper.js";
 import { Request } from "crawlee";
 import { Page } from "playwright";
 
@@ -157,7 +157,7 @@ export async function scrapeGoogleSearch(urls: string[], proxy: boolean) {
     });
   };
   // 调用 initializeCrawler 并传入必要的参数，包括泛型类型 SearchResult
-  return await scrap<SearchResult>(urls, proxy, requestHandler);
+  return await scrape<SearchResult>(urls, proxy, requestHandler);
 }
 
 function extractResultTotal(str: string): number | null {

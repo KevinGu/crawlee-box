@@ -3,7 +3,7 @@ import { PlaywrightCrawler, RequestQueue, ProxyConfiguration } from "crawlee";
 import { Request } from "crawlee";
 import { Page } from "playwright";
 
-export async function scrap<T>(
+export async function scrape<T>(
   urls: string[],
   proxy: boolean,
   requestHandler: (request: Request, page: Page, results: T[]) => Promise<void>

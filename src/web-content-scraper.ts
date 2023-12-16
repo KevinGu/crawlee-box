@@ -1,4 +1,4 @@
-import { scrap } from "./scraper.js";
+import { scrape } from "./scraper.js";
 import { Request } from "crawlee";
 import { Page } from "playwright";
 interface WebContentResult {
@@ -24,5 +24,5 @@ export async function scrapeWebContent(urls: string[], proxy: boolean) {
     });
   };
   // 调用 initializeCrawler 并传入必要的参数，包括泛型类型 SearchResult
-  return await scrap<WebContentResult>(urls, proxy, requestHandler);
+  return await scrape<WebContentResult>(urls, proxy, requestHandler);
 }
