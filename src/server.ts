@@ -1,7 +1,7 @@
 // server.ts
 import express, { Request, Response } from "express";
-import { ScrapeGoogleSearch } from "./google-search-scraper.js";
-import { ScrapeWebContent } from "./web-content-scraper.js";
+import { scrapeGoogleSearch } from "./google-search-scraper.js";
+import { scrapeWebContent } from "./web-content-scraper.js";
 
 const app = express();
 const port = 3002;
@@ -12,9 +12,9 @@ app.post("/scrape-google-search", async (req: Request, res: Response) => {
   const { proxy, queries, gl, hl, lr, uule } = req.body;
 
   const urls: string[] = [];
+
   // const queryArray = JSON.parse(queries);
   queries.forEach((query: string) => {
-    console.log("query>>>>>", query);
     const url = `http://www.google.com/search?hl=${hl}&q=${encodeURIComponent(
       query
     )}&gl=${gl}&lr=${lr}&uule=${uule}`;
@@ -22,7 +22,7 @@ app.post("/scrape-google-search", async (req: Request, res: Response) => {
   });
 
   try {
-    const result = await ScrapeGoogleSearch(urls, proxy);
+    const result = await scrapeGoogleSearch(urls, proxy ? proxy : false);
     res.json(result);
   } catch (error: any) {
     res.status(500).send(error.message);
@@ -30,10 +30,10 @@ app.post("/scrape-google-search", async (req: Request, res: Response) => {
 });
 
 app.post("/scrape-web-content", async (req: Request, res: Response) => {
-  const { urls } = req.body;
+  const { proxy, urls } = req.body;
 
   try {
-    const result = await ScrapeWebContent(urls);
+    const result = await scrapeWebContent(urls, proxy ? proxy : false);
     res.json(result);
   } catch (error: any) {
     res.status(500).send(error.message);
