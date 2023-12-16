@@ -37,15 +37,19 @@ interface SearchResult {
   organicResults: organicResult[];
 }
 
-export async function ScrapeGoogleSearch(urls: string[]) {
+export async function ScrapeGoogleSearch(urls: string[], proxy?: boolean) {
   // 创建一个新的请求队列实例
   const queueId = `queue-${Date.now()}`;
   const requestQueue = await RequestQueue.open(queueId);
 
-  const proxyUrls = process.env.PROXY_URLS ? process.env.PROXY_URLS.split(',') : [];
-  const proxyConfiguration = new ProxyConfiguration({
-    proxyUrls,
-  });
+  // 准备 Proxy 配置（如果需要）
+  const proxyConfiguration = proxy
+    ? new ProxyConfiguration({
+        proxyUrls: process.env.PROXY_URLS
+          ? process.env.PROXY_URLS.split(",")
+          : [],
+      })
+    : undefined;
 
   // 为每个 URL 添加请求到队列
   for (const url of urls) {
@@ -57,7 +61,7 @@ export async function ScrapeGoogleSearch(urls: string[]) {
     {
       proxyConfiguration,
       requestQueue,
-      maxRequestRetries:10,
+      maxRequestRetries: 10,
       async requestHandler({ request, page }) {
         console.log(`Processing ${request.url}...`);
         const title = await page.title();

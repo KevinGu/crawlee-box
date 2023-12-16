@@ -1,6 +1,7 @@
 // server.ts
 import express, { Request, Response } from "express";
 import { ScrapeGoogleSearch } from "./google-search-scraper.js";
+import { ScrapeWebContent } from "./web-content-scraper.js";
 
 const app = express();
 const port = 3002;
@@ -8,7 +9,7 @@ const port = 3002;
 app.use(express.json());
 
 app.post("/scrape-google-search", async (req: Request, res: Response) => {
-  const { queries, gl, hl, lr, uule } = req.body;
+  const { proxy, queries, gl, hl, lr, uule } = req.body;
 
   const urls: string[] = [];
   // const queryArray = JSON.parse(queries);
@@ -21,7 +22,18 @@ app.post("/scrape-google-search", async (req: Request, res: Response) => {
   });
 
   try {
-    const result = await ScrapeGoogleSearch(urls);
+    const result = await ScrapeGoogleSearch(urls, proxy);
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).send(error.message);
+  }
+});
+
+app.post("/scrape-web-content", async (req: Request, res: Response) => {
+  const { urls } = req.body;
+
+  try {
+    const result = await ScrapeWebContent(urls);
     res.json(result);
   } catch (error: any) {
     res.status(500).send(error.message);
