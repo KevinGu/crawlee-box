@@ -1,7 +1,11 @@
 // crawler-helper.ts
-import { PlaywrightCrawler, RequestQueue, ProxyConfiguration } from "crawlee";
-import { Request } from "crawlee";
-import { Page } from "playwright";
+import {
+  PlaywrightCrawler,
+  RequestQueue,
+  ProxyConfiguration,
+  Request,
+} from "crawlee";
+import { Page, firefox } from "playwright";
 
 export async function scrape<T>(
   urls: string[],
@@ -36,6 +40,12 @@ export async function scrape<T>(
     requestQueue,
     maxRequestRetries: 10,
     requestHandlerTimeoutSecs: 120,
+    launchContext: {
+      // Set the Firefox browser to be used by the crawler.
+      // If launcher option is not specified here,
+      // default Chromium browser will be used.
+      launcher: firefox,
+    },
     async requestHandler({ request, page }) {
       await requestHandler(request, page, results); // 传递泛型结果数组给处理函数
     },
