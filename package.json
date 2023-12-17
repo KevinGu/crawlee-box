@@ -4,10 +4,13 @@
     "type": "module",
     "description": "This is an example of a Crawlee project.",
     "dependencies": {
+        "@crawlee/browser-pool": "^3.6.2",
         "@mozilla/readability": "^0.5.0",
         "axios": "^1.6.2",
         "crawlee": "^3.0.0",
+        "esbuild": "^0.19.9",
         "express": "^4.18.2",
+        "jsdom": "^23.0.1",
         "playwright": "*"
     },
     "devDependencies": {
@@ -16,12 +19,12 @@
         "@types/node": "^20.0.0",
         "ts-node": "^10.9.2",
         "tsx": "^4.4.0",
-        "typescript": "~5.3.0"
+        "typescript": "~5.3.3"
     },
     "scripts": {
         "start": "npm run start:dev",
         "start:prod": "node dist/server.js",
-        "start:dev": "ts-node-esm -T src/server.ts",
+        "start:dev": "node --loader ts-node/esm src/server.ts",
         "build": "tsc",
         "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1",
         "postinstall": "npx crawlee install-playwright-browsers"

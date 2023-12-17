@@ -1,11 +1,11 @@
-// crawler-helper.ts
 import {
   PlaywrightCrawler,
   RequestQueue,
   ProxyConfiguration,
   Request,
 } from "crawlee";
-import { Page, webkit } from "playwright";
+import { Page, firefox } from "playwright";
+import { DeviceCategory, OperatingSystemsName } from '@crawlee/browser-pool';
 
 export async function scrape<T>(
   urls: string[],
@@ -36,6 +36,25 @@ export async function scrape<T>(
   }
 
   const crawler = new PlaywrightCrawler({
+    launchContext: {
+      // Set the Firefox browser to be used by the crawler.
+      // If launcher option is not specified here,
+      // default Chromium browser will be used.
+      launcher: firefox,
+  },
+    browserPoolOptions: {
+      useFingerprints: true, // this is the default
+      fingerprintOptions: {
+          fingerprintGeneratorOptions: {
+              devices: [
+                  DeviceCategory.desktop,
+              ],
+              operatingSystems: [
+                  OperatingSystemsName.macos,
+              ],
+          },
+      },
+  },
     proxyConfiguration,
     requestQueue,
     maxRequestRetries: 10,
