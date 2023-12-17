@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@mozilla/readability':
+    specifier: ^0.5.0
+    version: 0.5.0
   axios:
     specifier: ^1.6.2
     version: 1.6.2
@@ -578,6 +581,11 @@ packages:
     engines: {node: '>= 0.4'}
     dependencies:
       call-bind: 1.0.5
+    dev: false
+
+  /@mozilla/readability@0.5.0:
+    resolution: {integrity: sha512-Z+CZ3QaosfFaTqvhQsIktyGrjFjSC0Fa4EMph4mqKnWhmyoGICsV/8QK+8HpXut6zV7zwfWwqDmEjtk1Qf6EgQ==}
+    engines: {node: '>=14.0.0'}
     dev: false
 
   /@sapphire/async-queue@1.5.1:
