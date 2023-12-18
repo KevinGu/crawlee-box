@@ -2,7 +2,7 @@ import { scrape } from "./scraper.js";
 import { Request } from "crawlee";
 import { Page } from "playwright";
 
-interface faq {
+interface peopleAlsoAsk {
   question: string;
   answer: string;
   url: string | null | undefined;
@@ -18,9 +18,9 @@ interface featuredSnippets {
 interface organicResult {
   title: string;
   url: string;
-  desc: string;
+  description: string;
   emphasizedKeywords?: string[];
-  posistion: number;
+  position: number;
 }
 
 interface SearchResult {
@@ -28,7 +28,7 @@ interface SearchResult {
   url: string;
   title: string;
   featuredSnippets: featuredSnippets;
-  peopleAlsoAsk: faq[];
+  peopleAlsoAsk: peopleAlsoAsk[];
   relatedQueries: string[];
   organicResults: organicResult[];
 }
@@ -87,7 +87,7 @@ export async function scrapeGoogleSearch(urls: string[], proxy: boolean) {
     }
 
     //faq
-    const faqResults: faq[] = [];
+    const faqResults: peopleAlsoAsk[] = [];
     // 直接选择包含 "People also ask" 的区域
     const faqSection = await page.$(".MjjYud:has-text('People also ask')");
     if (faqSection) {
@@ -103,7 +103,7 @@ export async function scrapeGoogleSearch(urls: string[], proxy: boolean) {
         const titleEle = await faqEle.$(".yuRUbf h3");
         const title = await titleEle?.textContent();
         if (question && answer) {
-          const faqObj: faq = { question, answer, url, title };
+          const faqObj: peopleAlsoAsk = { question, answer, url, title };
           faqResults.push(faqObj);
         }
       }
@@ -132,14 +132,14 @@ export async function scrapeGoogleSearch(urls: string[], proxy: boolean) {
             }
           }
         }
-        const posistion = organicResults.length + 1;
+        const position = organicResults.length + 1;
         if (url && title && desc) {
           const organicResultObj: organicResult = {
             url,
             title,
-            desc,
+            description:desc,
             emphasizedKeywords: Array.from(new Set(emList)),
-            posistion,
+            position,
           };
           organicResults.push(organicResultObj);
         }
