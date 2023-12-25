@@ -29,6 +29,23 @@ export async function scrapeWebContent(urls: string[], proxy: boolean) {
   ) => {
     console.log(`Processing ${request.url}...`);
     const title = await page.title();
+    
+    // 移除特定元素
+    await page.evaluate(() => {
+      const selectors = [
+        'script', 'style', 'noscript', 'svg',
+        '[role="alert"]',
+        '[role="banner"]',
+        '[role="dialog"]',
+        '[role="alertdialog"]',
+        '[role="region"][aria-label*="skip" i]',
+        '[aria-modal="true"]'
+      ];
+      selectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => element.remove());
+      });
+    });
     const html = await page.content();
     // 使用 jsdom 创建 DOM 环境
     const dom = new JSDOM(html);
