@@ -4,7 +4,7 @@ import {
   ProxyConfiguration,
   Request,
 } from "crawlee";
-import { Page, firefox } from "playwright";
+import { Page, chrome } from "playwright";
 import { DeviceCategory, OperatingSystemsName } from '@crawlee/browser-pool';
 
 export async function scrape<T>(
@@ -40,7 +40,7 @@ export async function scrape<T>(
       // Set the Firefox browser to be used by the crawler.
       // If launcher option is not specified here,
       // default Chromium browser will be used.
-      launcher: firefox,
+      launcher: chrome,
   },
     browserPoolOptions: {
       useFingerprints: true, // this is the default
