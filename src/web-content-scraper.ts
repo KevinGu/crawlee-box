@@ -45,6 +45,13 @@ export async function scrapeWebContent(urls: string[], proxy: boolean) {
         const elements = document.querySelectorAll(selector);
         elements.forEach(element => element.remove());
       });
+
+      // 移除所有元素的 class 和 id 属性
+      const allElements = document.getElementsByTagName('*');
+      for (let element of allElements) {
+        element.removeAttribute('class');
+        element.removeAttribute('id');
+      }
     });
     const html = await page.content();
     // 使用 jsdom 创建 DOM 环境
