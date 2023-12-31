@@ -30,10 +30,14 @@ app.post("/scrape-google-search", async (req: Request, res: Response) => {
 });
 
 app.post("/scrape-web-content", async (req: Request, res: Response) => {
-  const { proxy, urls } = req.body;
+  const { proxy, urls, filter } = req.body;
 
   try {
-    const result = await scrapeWebContent(urls, proxy ? proxy : false);
+    const result = await scrapeWebContent(
+      urls,
+      proxy ? proxy : false,
+      filter ? filter : true
+    );
     res.json(result);
   } catch (error: any) {
     res.status(500).send(error.message);

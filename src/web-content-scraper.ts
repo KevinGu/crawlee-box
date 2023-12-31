@@ -21,7 +21,7 @@ interface WebContentResult {
   } | null; 
 }
 
-export async function scrapeWebContent(urls: string[], proxy: boolean) {
+export async function scrapeWebContent(urls: string[], proxy: boolean, filter: boolean) {
   const requestHandler = async (
     request: Request,
     page: Page,
@@ -30,6 +30,7 @@ export async function scrapeWebContent(urls: string[], proxy: boolean) {
     console.log(`Processing ${request.url}...`);
     const title = await page.title();
     
+    if(filter){
     // 移除特定元素
     await page.evaluate(() => {
       const selectors = [
@@ -52,7 +53,7 @@ export async function scrapeWebContent(urls: string[], proxy: boolean) {
         element.removeAttribute('class');
         element.removeAttribute('id');
       }
-    });
+    });}
     const html = await page.content();
     // 使用 jsdom 创建 DOM 环境
     const dom = new JSDOM(html);
