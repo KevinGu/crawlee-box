@@ -35,8 +35,8 @@ app.post("/scrape-web-content", async (req: Request, res: Response) => {
   try {
     const result = await scrapeWebContent(
       urls,
-      proxy ? proxy : false,
-      filter ? filter : true
+      proxy,
+      filter
     );
     res.json(result);
   } catch (error: any) {

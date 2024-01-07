@@ -4,6 +4,7 @@
     "type": "module",
     "description": "This is an example of a Crawlee project.",
     "dependencies": {
+        "@aws-sdk/client-s3": "^3.484.0",
         "@crawlee/browser-pool": "^3.6.2",
         "@mozilla/readability": "^0.5.0",
         "axios": "^1.6.2",
