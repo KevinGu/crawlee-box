@@ -4,8 +4,7 @@ import { Request } from "crawlee";
 import { Page } from "playwright";
 import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
-import { v4 as uuidv4 } from 'uuid';
-import sharp from 'sharp';
+import sharp from "sharp";
 
 interface WebContentResult {
   url: string;
@@ -24,13 +23,14 @@ interface WebContentResult {
     publishedTime: string;
   } | null;
   screenshot: string | undefined;
-  fullScreenshot: string | undefined;
+  // fullScreenshot: string | undefined;
 }
 
 export async function scrapeWebContent(
   urls: string[],
   proxy: boolean,
-  filter: boolean
+  filter: boolean,
+  screenshot: boolean
 ) {
   const requestHandler = async (
     request: Request,
@@ -41,33 +41,50 @@ export async function scrapeWebContent(
 
     await page.waitForLoadState("domcontentloaded");
     //screenshot
-    const screenshot = await page.screenshot();
-    const fullScreenshot = await page.screenshot({ fullPage: true });
-
     let fullScreenshotFileName;
     let screenshotFileName;
-    try {
-      const currentDate = new Date();
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-      const day = currentDate.getDate();
-      const uuid = uuidv4();
-      const fileNamePrefix = `screenshots/${year}/${month}/${day}`;
-      fullScreenshotFileName = `${fileNamePrefix}/${processUrl(request.url)}_full.webp`;
-      screenshotFileName = `${fileNamePrefix}/${processUrl(request.url)}.webp`;
+    if (screenshot) {
+      const screenshot = await page.screenshot();
+      // const fullScreenshot = await page.screenshot({ fullPage: true });
 
-      // 使用Sharp转换截图为WebP格式并上传
-      const optimizedScreenshot = await sharp(screenshot).webp().toBuffer();
-      await uploadScreenshot("hrefgo-cdn", screenshotFileName, optimizedScreenshot);
-      console.log("Screenshot uploaded to Cloudflare R2");
+      try {
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1;
+        const day = currentDate.getDate();
+        const fileNamePrefix = `screenshots/${year}/${month}/${day}`;
 
-      const optimizedFullScreenshot = await sharp(fullScreenshot).webp().toBuffer();
-      await uploadScreenshot("hrefgo-cdn", fullScreenshotFileName, optimizedFullScreenshot);
-      console.log("Full screenshot uploaded to Cloudflare R2");
-    } catch (error) {
-      console.error("Error during screenshot upload:", error);
+        screenshotFileName = `${fileNamePrefix}/${processUrl(
+          request.url
+        )}.webp`;
+
+        // 使用Sharp转换截图为WebP格式并上传
+        const optimizedScreenshot = await sharp(screenshot).webp().toBuffer();
+        await uploadScreenshot(
+          "hrefgo-cdn",
+          screenshotFileName,
+          optimizedScreenshot
+        );
+        console.log("Screenshot uploaded to Cloudflare R2");
+
+        // fullScreenshotFileName = `${fileNamePrefix}/${processUrl(
+        //   request.url
+        // )}_full.webp`;
+        // const optimizedFullScreenshot = await sharp(fullScreenshot)
+        //   .webp()
+        //   .toBuffer();
+        // await uploadScreenshot(
+        //   "hrefgo-cdn",
+        //   fullScreenshotFileName,
+        //   optimizedFullScreenshot
+        // );
+        // console.log("Full screenshot uploaded to Cloudflare R2");
+      } catch (error) {
+        console.error("Error during screenshot upload:", error);
+      }
     }
 
+    //get content
     const title = await page.title();
     if (filter) {
       console.log("enable filter...");
@@ -113,7 +130,7 @@ export async function scrapeWebContent(
       html,
       article,
       screenshot: screenshotFileName,
-      fullScreenshot: fullScreenshotFileName,
+      // fullScreenshot: fullScreenshotFileName,
     });
   };
   // 调用 initializeCrawler 并传入必要的参数，包括泛型类型 SearchResult
@@ -122,10 +139,10 @@ export async function scrapeWebContent(
 
 function processUrl(url: string): string {
   // 移除'http://'或'https://'前缀
-  let processedUrl = url.replace(/^(http:\/\/|https:\/\/)/, '');
+  let processedUrl = url.replace(/^(http:\/\/|https:\/\/)/, "");
 
   // 将点、斜杠和破折号替换为下划线
-  processedUrl = processedUrl.replace(/[\.\-\/]/g, '_');
+  processedUrl = processedUrl.replace(/[\.\-\/]/g, "_");
 
   return processedUrl;
 }
