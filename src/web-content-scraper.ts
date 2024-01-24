@@ -5,9 +5,11 @@ import { Page } from "playwright";
 import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
 import sharp from "sharp";
+import TurndownService from "turndown";
 
 interface WebContentResult {
   url: string;
+  markdown: string;
   title: string;
   html: string;
   article: {
@@ -41,7 +43,7 @@ export async function scrapeWebContent(
 
     await page.waitForLoadState("domcontentloaded");
     //screenshot
-    let fullScreenshotFileName;
+    // let fullScreenshotFileName;
     let screenshotFileName;
     if (screenshot) {
       const screenshot = await page.screenshot();
@@ -88,35 +90,89 @@ export async function scrapeWebContent(
     const title = await page.title();
     if (filter) {
       console.log("enable filter...");
-      // 移除特定元素
+
       await page.evaluate(() => {
-        const selectors = [
-          "script",
+        const removeComments = (node: Node) => {
+          const childNodes = node.childNodes;
+          for (let i = childNodes.length - 1; i >= 0; i--) {
+            const child = childNodes[i];
+            if (child.nodeType === 8) {
+              // Node.COMMENT_NODE
+              child.remove();
+            } else if (child.childNodes.length > 0) {
+              removeComments(child);
+            }
+          }
+        };
+
+        removeComments(document);
+
+        const selectorsToRemove = [
+          "meta",
           "style",
+          "script",
           "noscript",
+          "link",
+          "img",
+          "path",
           "svg",
-          '[role="alert"]',
-          '[role="banner"]',
-          '[role="dialog"]',
-          '[role="alertdialog"]',
-          '[role="region"][aria-label*="skip" i]',
-          '[aria-modal="true"]',
+          "audio",
+          "role",
+          "iframe",
+          "video",
+          "br",
         ];
-        selectors.forEach((selector) => {
-          const elements = document.querySelectorAll(selector);
-          elements.forEach((element) => element.remove());
+        const attributesToRemove = ["class", "id", "style", "target", "role","tabindex"];
+        const tagsToFlatten = ["div", "p", "span"];
+
+        // 替换指定的元素，保留内容
+        tagsToFlatten.forEach((tag) => {
+          document.querySelectorAll(tag).forEach((element) => {
+            const parent = element.parentNode;
+            if (parent) {
+              while (element.firstChild) {
+                parent.insertBefore(element.firstChild, element);
+              }
+              parent.removeChild(element);
+            }
+          });
         });
 
-        // 移除所有元素的 class 和 id 属性
-        const allElements = document.getElementsByTagName("*");
-        for (let element of allElements) {
-          element.removeAttribute("class");
-          element.removeAttribute("id");
+        // 移除指定的元素
+        for (const selector of selectorsToRemove) {
+          const elements = document.querySelectorAll(selector);
+          elements.forEach((element) => element.remove());
+          console.log("remove ", selector);
         }
+        // 移除指定的属性
+        const allElements = document.querySelectorAll("*");
+
+        allElements.forEach((element) => {
+          // 获取元素的所有属性
+          const attributeNames = element.getAttributeNames();
+
+          attributeNames.forEach((attr) => {
+            if (attributesToRemove.includes(attr)) {
+              element.removeAttribute(attr);
+            }
+            // 检查并移除以 'data-' 开头的属性
+            if (attr.startsWith("data-")) {
+              element.removeAttribute(attr);
+            }
+
+            // 检查并移除以 'aria-' 开头的属性
+            if (attr.startsWith("aria-")) {
+              element.removeAttribute(attr);
+            }
+          });
+        });
       });
     }
 
-    const html = await page.content();
+    let html = await page.content();
+    html= html.replace(/\n/g, ' ').replace(/\t/g, ' ').replace(/ +/g, ' ')
+    const turndownService = new TurndownService();
+    const markdown: string = turndownService.turndown(html);
     // 使用 jsdom 创建 DOM 环境
     const dom = new JSDOM(html);
     const document = dom.window.document;
@@ -126,6 +182,7 @@ export async function scrapeWebContent(
 
     results.push({
       url: request.url,
+      markdown,
       title,
       html,
       article,
