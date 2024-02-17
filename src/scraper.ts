@@ -15,7 +15,7 @@ export async function scrape<T>(
   const results: T[] = []; // 使用泛型数组来存储结果
   const queueId = `queue-${Date.now()}`;
   const requestQueue = await RequestQueue.open(queueId);
-  requestQueue.timeoutSecs = 120;
+  requestQueue.timeoutSecs = 50;
 
   const proxyUrls = process.env.PROXY_URLS
     ? process.env.PROXY_URLS.split(",")
@@ -57,8 +57,8 @@ export async function scrape<T>(
   },
     proxyConfiguration,
     requestQueue,
-    maxRequestRetries: 10,
-    requestHandlerTimeoutSecs: 120,
+    maxRequestRetries: 3,
+    requestHandlerTimeoutSecs: 50,
     async requestHandler({ request, page }) {
       await requestHandler(request, page, results); // 传递泛型结果数组给处理函数
     },
