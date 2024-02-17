@@ -26,7 +26,6 @@ import {
     };
   
     try {
-      console.log('Uploading file to S3:', process.env.ENDPOINT as string);
       const uploadResponse = await S3.send(new PutObjectCommand(uploadParams));
       console.log('File uploaded successfully:', uploadResponse);
       return uploadResponse;
