@@ -5,12 +5,11 @@ import { Page } from "playwright";
 import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
 import sharp from "sharp";
-import TurndownService from "turndown";
 
 interface WebContentResult {
   url: string;
-  markdown: string;
   title: string;
+  desc: string | null;
   html: string;
   article: {
     title: string;
@@ -32,7 +31,8 @@ export async function scrapeWebContent(
   urls: string[],
   proxy: boolean,
   filter: boolean,
-  screenshot: boolean
+  screenshot: boolean,
+  waitSec: number
 ) {
   const requestHandler = async (
     request: Request,
@@ -42,6 +42,14 @@ export async function scrapeWebContent(
     console.log(`Processing ${request.url}...`);
 
     await page.waitForLoadState("domcontentloaded");
+    await page.waitForTimeout(waitSec*1000); 
+
+    let desc = await page.evaluate(() => {
+      const metaDescription = document.querySelector(
+        "meta[name='description']"
+      );
+      return metaDescription ? metaDescription.getAttribute("content") : "";
+    });
     //screenshot
     // let fullScreenshotFileName;
     let screenshotFileName;
@@ -131,6 +139,7 @@ export async function scrapeWebContent(
           "role",
           "tabindex",
           "rel",
+          "placeholder"
         ];
         const tagsToFlatten = [
           "div",
@@ -142,6 +151,7 @@ export async function scrapeWebContent(
           "b",
           "i",
           "u",
+          "section"
         ];
 
         // 替换指定的元素，保留内容
@@ -149,10 +159,25 @@ export async function scrapeWebContent(
           document.querySelectorAll(tag).forEach((element) => {
             const parent = element.parentNode;
             if (parent) {
+              let content = "";
               while (element.firstChild) {
-                parent.insertBefore(element.firstChild, element);
+                const child = element.firstChild;
+                // 使用可选链操作符和空值合并操作符来确保 textContent 不为 null
+                const childTextContent = child.textContent?.trim() ?? " ";
+                if (child.nodeType === Node.TEXT_NODE && childTextContent) {
+                  content += childTextContent + "&nbsp;";
+                } else {
+                  // 对于非文本节点，如果其文本内容非空，也添加到content中并加上空格
+                  if (childTextContent) {
+                    content += childTextContent + "&nbsp;";
+                  }
+                }
+                parent.insertBefore(child, element);
               }
-              parent.removeChild(element);
+              // 创建一个新的文本节点，包含修改后带空格的内容
+              const newTextContent = document.createTextNode(content.trim());
+              // 用新的文本节点替换原来的元素
+              parent.replaceChild(newTextContent, element);
             }
           });
         });
@@ -160,8 +185,17 @@ export async function scrapeWebContent(
         // 移除指定的元素
         for (const selector of selectorsToRemove) {
           const elements = document.querySelectorAll(selector);
-          elements.forEach((element) => element.remove());
-          console.log("remove ", selector);
+          elements.forEach((element) => {
+            // 对 meta 标签进行特殊处理
+            if (element.tagName.toLowerCase() === "meta") {
+              // 检查是否为描述性 meta 标签
+              const nameAttr = element.getAttribute("name");
+              if (nameAttr === "description") {
+                return; // 如果是描述性 meta 标签，则不移除
+              }
+            }
+            element.remove(); // 移除非描述性 meta 标签或其他指定的元素
+          });
         }
         // 移除指定的属性
         const allElements = document.querySelectorAll("*");
@@ -190,8 +224,7 @@ export async function scrapeWebContent(
 
     let html = await page.content();
     html = html.replace(/\n/g, " ").replace(/\t/g, " ").replace(/ +/g, " ");
-    const turndownService = new TurndownService();
-    const markdown: string = turndownService.turndown(html);
+
     // 使用 jsdom 创建 DOM 环境
     const dom = new JSDOM(html);
     const document = dom.window.document;
@@ -201,8 +234,8 @@ export async function scrapeWebContent(
 
     results.push({
       url: request.url,
-      markdown,
       title,
+      desc,
       html,
       article,
       screenshot: screenshotFileName,
