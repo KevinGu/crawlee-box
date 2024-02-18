@@ -25,7 +25,7 @@
         "typescript": "~5.3.3"
     },
     "scripts": {
-        "start": "npm run start:dev",
+        "start": "pnpm run start:dev",
         "start:prod": "node dist/server.js",
         "start:dev": "node --loader ts-node/esm src/server.ts",
         "build": "tsc",

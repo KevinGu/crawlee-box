@@ -26,10 +26,6 @@ import {
     };
   
     try {
-      console.log('ENDPOINT:', process.env.ENDPOINT);
-      console.log('ACCESS_KEY_ID:', process.env.ACCESS_KEY_ID);
-      console.log('SECRET_ACCESS_KEY:', process.env.SECRET_ACCESS_KEY);
-      
       const uploadResponse = await S3.send(new PutObjectCommand(uploadParams));
       console.log('File uploaded successfully:', uploadResponse);
       return uploadResponse;
