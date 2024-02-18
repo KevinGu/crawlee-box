@@ -121,9 +121,28 @@ export async function scrapeWebContent(
           "iframe",
           "video",
           "br",
+          "picture",
         ];
-        const attributesToRemove = ["class", "id", "style", "target", "role","tabindex"];
-        const tagsToFlatten = ["div", "p", "span"];
+        const attributesToRemove = [
+          "class",
+          "id",
+          "style",
+          "target",
+          "role",
+          "tabindex",
+          "rel",
+        ];
+        const tagsToFlatten = [
+          "div",
+          "p",
+          "span",
+          "small",
+          "em",
+          "strong",
+          "b",
+          "i",
+          "u",
+        ];
 
         // 替换指定的元素，保留内容
         tagsToFlatten.forEach((tag) => {
@@ -170,7 +189,7 @@ export async function scrapeWebContent(
     }
 
     let html = await page.content();
-    html= html.replace(/\n/g, ' ').replace(/\t/g, ' ').replace(/ +/g, ' ')
+    html = html.replace(/\n/g, " ").replace(/\t/g, " ").replace(/ +/g, " ");
     const turndownService = new TurndownService();
     const markdown: string = turndownService.turndown(html);
     // 使用 jsdom 创建 DOM 环境
