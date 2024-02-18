@@ -26,8 +26,8 @@
     },
     "scripts": {
         "start": "pnpm run start:dev",
-        "start:prod": "node dist/server.js",
-        "start:dev": "node --loader ts-node/esm src/server.ts",
+        "start:prod": "node --env-file=.env dist/server.js",
+        "start:dev": "node --env-file=.env --loader ts-node/esm src/server.ts",
         "build": "tsc",
         "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1",
         "postinstall": "npx crawlee install-playwright-browsers"
