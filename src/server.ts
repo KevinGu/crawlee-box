@@ -2,6 +2,10 @@
 import express, { Request, Response } from "express";
 import { scrapeGoogleSearch } from "./google-search-scraper.js";
 import { scrapeWebContent } from "./web-content-scraper.js";
+import { googleTranslate } from "./google-translate.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 const port = 3002;
@@ -30,10 +34,32 @@ app.post("/scrape-google-search", async (req: Request, res: Response) => {
 });
 
 app.post("/scrape-web-content", async (req: Request, res: Response) => {
-  const { proxy, urls, filter, screenshot,waitSec } = req.body;
+  const { proxy, urls, filter, screenshot, waitSec } = req.body;
 
   try {
-    const result = await scrapeWebContent(urls, proxy, filter,screenshot,waitSec);
+    const result = await scrapeWebContent(
+      urls,
+      proxy,
+      filter,
+      screenshot,
+      waitSec
+    );
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).send(error.message);
+  }
+});
+
+app.post("/google-translate", async (req: Request, res: Response) => {
+  const { content, src, dst, proxy } = req.body;
+
+  try {
+    const result = await googleTranslate(
+      content,
+      src,
+      dst,
+      proxy
+    );
     res.json(result);
   } catch (error: any) {
     res.status(500).send(error.message);
