@@ -5,6 +5,7 @@ export async function googleTranslate(
   content: string,
   src: string,
   dst: string,
+  jsonMode: boolean = false,
   proxy?: string
 ): Promise<string> {
   try {
@@ -21,8 +22,11 @@ export async function googleTranslate(
     };
 
     const result = await translate(content, options);
-    const resultText = replacePunctuation(result.text);
-    return JSON.parse(resultText);
+    let resultText = result.text;
+    if (jsonMode) {
+      resultText = JSON.parse(replacePunctuation(result.text));
+    }
+    return resultText;
   } catch (error: any) {
     throw new Error(`Translation failed: ${error.message || error}`);
   }
