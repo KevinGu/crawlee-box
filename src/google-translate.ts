@@ -7,7 +7,7 @@ export async function googleTranslate(
   src: string,
   dst: string,
   proxy?: string
-): Promise<RawResponse> {
+): Promise<string> {
   try {
     let agent;  // 在这里声明 agent
 
@@ -22,7 +22,7 @@ export async function googleTranslate(
     };
 
     const result = await translate(content, options);
-    return result.raw;
+    return result.text;
   } catch (error: any) {
     throw new Error(`Translation failed: ${error.message || error}`);
   }
