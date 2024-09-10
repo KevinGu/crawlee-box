@@ -24,8 +24,14 @@ export async function googleTranslate(
     const result = await translate(content, options);
     let resultText = result.text;
     if (jsonMode) {
-      resultText = JSON.parse(replacePunctuation(result.text));
+      resultText = replacePunctuation(resultText);
+      console.log(resultText);
+      resultText = sanitizeJsonString(resultText);
+      console.log(resultText);
+      console.log(resultText);
+      resultText = JSON.parse(resultText);
     }
+    console.log(resultText);
     return resultText;
   } catch (error: any) {
     throw new Error(`Translation failed: ${error.message || error}`);
@@ -42,4 +48,17 @@ function replacePunctuation(text: string): string {
   text = text.replace(/‘/g, "'");
   text = text.replace(/’/g, "'");
   return text;
+}
+
+function sanitizeJsonString(jsonString: string): string {
+  // 使用你提供的正则表达式来匹配和处理多余的引号
+  const sanitizedString = jsonString.replace(
+    /([:\[,{]\s*)"(.*?)"(?=\s*[:,\]}])/g,
+    (_, p1, p2) => {
+      p2 = p2.replace(/"/g, '\\"');
+      return p1 + '"' + p2 + '"';
+    }
+  );
+
+  return sanitizedString;
 }

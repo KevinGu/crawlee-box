@@ -38,6 +38,9 @@ dependencies:
   google-translate-extended-api:
     specifier: ^2.0.5
     version: 2.0.5
+  http-proxy-agent:
+    specifier: ^7.0.2
+    version: 7.0.2
   jsdom:
     specifier: ^24.1.0
     version: 24.1.0

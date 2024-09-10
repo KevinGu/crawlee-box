@@ -15,6 +15,7 @@
         "esbuild": "^0.20.2",
         "express": "^4.19.2",
         "google-translate-extended-api": "^2.0.5",
+        "http-proxy-agent": "^7.0.2",
         "jsdom": "^24.1.0",
         "playwright": "1.41.2",
         "sharp": "^0.33.4",
@@ -33,7 +34,7 @@
     "scripts": {
         "start": "pnpm run start:dev",
         "start:prod": "node dist/server.js",
-        "start:dev": "node --loader ts-node/esm src/server.ts",
+        "start:dev": "node --loader ts-node/esm --trace-warnings src/server.ts",
         "build": "tsc",
         "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1",
         "postinstall": "npx crawlee install-playwright-browsers"

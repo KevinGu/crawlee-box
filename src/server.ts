@@ -1,4 +1,3 @@
-// server.ts
 import express, { Request, Response } from "express";
 import { scrapeGoogleSearch } from "./google-search-scraper.js";
 import { scrapeWebContent } from "./web-content-scraper.js";
