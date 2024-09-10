@@ -1,7 +1,7 @@
-import { translate } from "@vitalets/google-translate-api";
-import { SocksProxyAgent } from "socks-proxy-agent";
+import { HttpProxyAgent } from "http-proxy-agent";
+import * as bingTranslator from "bing-translate-api";
 
-export async function googleTranslate(
+export async function BingTranslate(
   content: string,
   src: string,
   dst: string,
@@ -12,19 +12,22 @@ export async function googleTranslate(
     let agent;
 
     if (proxy) {
-      agent = new SocksProxyAgent(proxy);
+      agent = new HttpProxyAgent(proxy);
     }
 
-    const options = {
-      from: src,
-      to: dst,
-      fetchOptions: { agent, timeout: 10000 },
-    };
+    const translation = await bingTranslator.translate(
+      content,
+      src,
+      dst,
+      false,
+      false,
+      undefined,
+      { http: agent }
+    );
 
-    const result = await translate(content, options);
-    let resultText = result.text;
+    let resultText = translation?.translation ?? '';
     if (jsonMode) {
-      resultText = JSON.parse(replacePunctuation(result.text));
+      resultText = JSON.parse(replacePunctuation(resultText));
     }
     return resultText;
   } catch (error: any) {

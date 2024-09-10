@@ -4,6 +4,7 @@ import { scrapeGoogleSearch } from "./google-search-scraper.js";
 import { scrapeWebContent } from "./web-content-scraper.js";
 import { googleTranslate } from "./google-translate.js";
 import dotenv from "dotenv";
+import { BingTranslate } from "./bing-translate.js";
 
 dotenv.config();
 
@@ -55,6 +56,23 @@ app.post("/google-translate", async (req: Request, res: Response) => {
 
   try {
     const result = await googleTranslate(
+      content,
+      src,
+      dst,
+      jsonMode,
+      proxy
+    );
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).send(error.message);
+  }
+});
+
+app.post("/bing-translate", async (req: Request, res: Response) => {
+  const { content, src, dst, jsonMode,proxy } = req.body;
+
+  try {
+    const result = await BingTranslate(
       content,
       src,
       dst,
