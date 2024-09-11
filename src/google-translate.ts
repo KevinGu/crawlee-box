@@ -32,7 +32,7 @@ export async function googleTranslate(
       return response;
     } else {
       let response = await translate(content, options);
-      return response.text;
+      return response.text.replace(/^"(.*)"$/, '$1');
     }
   } catch (error: any) {
     throw new Error(`translate fail: ${error.message || error}`);
@@ -55,11 +55,8 @@ async function translateJson(
   const processedJsonResponse = await translate(content, options);
 
   let processedJsonString = processedJsonResponse.text;
-  // console.log("==",processedJsonString);
   processedJsonString = replacePunctuation(processedJsonString);
-  // console.log("====",processedJsonString);
   processedJsonString = sanitizeJsonString(processedJsonString);
-  // console.log("======",processedJsonString);
   const restoredJson = restoreKeys(processedJsonString, keyMap);
   return restoredJson;
 }
@@ -75,7 +72,7 @@ function processNode(
     } else {
       const result: { [key: string]: any } = {};
       for (const [originalKey, value] of Object.entries(node)) {
-        const placeholderKey = `$KEY${getNextKey()}$`;
+        const placeholderKey = `_KEY${getNextKey()}_`;
         keyMap.set(placeholderKey, originalKey);
         result[placeholderKey] = processNode(value, keyMap, getNextKey);
       }
