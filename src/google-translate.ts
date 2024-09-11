@@ -55,8 +55,11 @@ async function translateJson(
   const processedJsonResponse = await translate(content, options);
 
   let processedJsonString = processedJsonResponse.text;
+  // console.log("==",processedJsonString);
   processedJsonString = replacePunctuation(processedJsonString);
+  // console.log("====",processedJsonString);
   processedJsonString = sanitizeJsonString(processedJsonString);
+  // console.log("======",processedJsonString);
   const restoredJson = restoreKeys(processedJsonString, keyMap);
   return restoredJson;
 }
@@ -120,7 +123,7 @@ function sanitizeJsonString(jsonString: string): string {
   const sanitizedString = jsonString.replace(
     /([:\[,{]\s*)"(.*?)"(?=\s*[:,\]}])/g,
     (_, p1, p2) => {
-      p2 = p2.replace(/"/g, '\\"');
+      p2 = p2.replace(/(?<!\\)"/g, '\\"');
       return p1 + '"' + p2 + '"';
     }
   );
