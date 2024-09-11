@@ -32,7 +32,7 @@ export async function googleTranslate(
       return response;
     } else {
       let response = await translate(content, options);
-      return response.text.replace(/^"(.*)"$/, '$1');
+      return response.text.replace(/^"(.*)"$/, "$1");
     }
   } catch (error: any) {
     throw new Error(`translate fail: ${error.message || error}`);
@@ -51,18 +51,25 @@ async function translateJson(
     processNode(rootNode, keyMap, () => keyCounter++)
   );
 
-  //bug，一定要冒号两边有空格，不然翻译会挂
-  content = replacedJson.replace(/"\s*:\s*"/g, '" : "');
+  //bug，一定要处理冒号两边有空格，不然翻译会挂
+  if (options.to == "de") {
+    content = replacedJson.replace(/"\s*:\s*"/g, '": "');
+  } else if (options.to == "no") {
+    content = replacedJson.replace(/"\s*:\s*"/g, '" : "');
+  } else {
+    content = replacedJson.replace(/"\s*:\s*"/g, '":"');
+  }
   const processedJsonResponse = await translate(content, options);
 
   let processedJsonString = processedJsonResponse.text;
-  // console.log("==",processedJsonString);
+
+  // console.log("==", processedJsonString);
   processedJsonString = replacePunctuation(processedJsonString);
-  // console.log("====",processedJsonString);
+  // console.log("====", processedJsonString);
   processedJsonString = sanitizeJsonString(processedJsonString);
-  // console.log("======",processedJsonString);
+  // console.log("======", processedJsonString);
   const restoredJson = restoreKeys(processedJsonString, keyMap);
-  // console.log("========",restoredJson);
+  // console.log("========", restoredJson);
   return restoredJson;
 }
 
@@ -77,7 +84,7 @@ function processNode(
     } else {
       const result: { [key: string]: any } = {};
       for (const [originalKey, value] of Object.entries(node)) {
-        const placeholderKey = `#${getNextKey()}#`;//一定要有#，不然翻译会挂
+        const placeholderKey = `#${getNextKey()}#`; //一定要有#，不然翻译会挂
         keyMap.set(placeholderKey, originalKey);
         result[placeholderKey] = processNode(value, keyMap, getNextKey);
       }
