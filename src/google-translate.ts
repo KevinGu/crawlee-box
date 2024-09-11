@@ -63,13 +63,13 @@ async function translateJson(
 
   let processedJsonString = processedJsonResponse.text;
 
-  // console.log("==", processedJsonString);
+  console.log("==", processedJsonString);
   processedJsonString = replacePunctuation(processedJsonString);
-  // console.log("====", processedJsonString);
+  console.log("====", processedJsonString);
   processedJsonString = sanitizeJsonString(processedJsonString);
-  // console.log("======", processedJsonString);
+  console.log("======", processedJsonString);
   const restoredJson = restoreKeys(processedJsonString, keyMap);
-  // console.log("========", restoredJson);
+  console.log("========", restoredJson);
   return restoredJson;
 }
 
@@ -124,6 +124,8 @@ function replacePunctuation(text: string): string {
   text = text.replace(/”/g, '"');
   text = text.replace(/‘/g, "'");
   text = text.replace(/’/g, "'");
+  text = text.replace(/„/g, "\"");//for de
+  text = text.replace(/“/g, "\"");//for de
   return text;
 }
 
