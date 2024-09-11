@@ -51,13 +51,18 @@ async function translateJson(
     processNode(rootNode, keyMap, () => keyCounter++)
   );
 
-  content = replacedJson;
+  //bug，一定要冒号两边有空格，不然翻译会挂
+  content = replacedJson.replace(/"\s*:\s*"/g, '" : "');
   const processedJsonResponse = await translate(content, options);
 
   let processedJsonString = processedJsonResponse.text;
+  // console.log("==",processedJsonString);
   processedJsonString = replacePunctuation(processedJsonString);
+  // console.log("====",processedJsonString);
   processedJsonString = sanitizeJsonString(processedJsonString);
+  // console.log("======",processedJsonString);
   const restoredJson = restoreKeys(processedJsonString, keyMap);
+  // console.log("========",restoredJson);
   return restoredJson;
 }
 
@@ -72,7 +77,7 @@ function processNode(
     } else {
       const result: { [key: string]: any } = {};
       for (const [originalKey, value] of Object.entries(node)) {
-        const placeholderKey = `_KEY${getNextKey()}_`;
+        const placeholderKey = `#${getNextKey()}#`;//一定要有#，不然翻译会挂
         keyMap.set(placeholderKey, originalKey);
         result[placeholderKey] = processNode(value, keyMap, getNextKey);
       }
