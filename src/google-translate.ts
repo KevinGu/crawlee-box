@@ -51,25 +51,32 @@ async function translateJson(
     processNode(rootNode, keyMap, () => keyCounter++)
   );
 
+  // console.log("+++++replacedJson+----", replacedJson);
+
   //bug，一定要处理冒号两边有空格，不然翻译会挂
-  if (options.to == "de") {
-    content = replacedJson.replace(/"\s*:\s*"/g, '": "');
-  } else if (options.to == "no") {
-    content = replacedJson.replace(/"\s*:\s*"/g, '" : "');
-  } else {
-    content = replacedJson.replace(/"\s*:\s*"/g, '":"');
-  }
-  const processedJsonResponse = await translate(content, options);
+  // if (options.to == "de") {
+  //   content = replacedJson.replace(/"\s*:\s*"/g, '": "');
+  // } else if (options.to == "no") {
+  //   content = replacedJson.replace(/"\s*:\s*"/g, '" : "');
+  // } else {
+  //   content = replacedJson.replace(/"\s*:\s*"/g, '":"');
+  // }
 
-  let processedJsonString = processedJsonResponse.text;
+  const replacedSymbolsJson: string = replaceJsonSymbols(replacedJson);
+  // console.log("++++++----", content);
+  // console.log("++++++", replacedJSON);
 
-  console.log("==", processedJsonString);
-  processedJsonString = replacePunctuation(processedJsonString);
-  console.log("====", processedJsonString);
-  processedJsonString = sanitizeJsonString(processedJsonString);
-  console.log("======", processedJsonString);
+  const processedJsonResponse = await translate(replacedSymbolsJson, options);
+  // console.log("==", processedJsonResponse.text);
+
+  let processedJsonString = reverseReplaceSymbols(processedJsonResponse.text);
+  // console.log("====", processedJsonString);
+  // processedJsonString = replacePunctuation(processedJsonString);
+  // console.log("======", processedJsonString);
+  // processedJsonString = sanitizeJsonString(processedJsonString);
+  // console.log("========", processedJsonString);
   const restoredJson = restoreKeys(processedJsonString, keyMap);
-  console.log("========", restoredJson);
+  // console.log("==========", restoredJson);
   return restoredJson;
 }
 
@@ -96,19 +103,23 @@ function processNode(
 
 function restoreKeys(jsonString: string, keyMap: Map<string, string>): string {
   const rootNode = JSON.parse(jsonString);
+  // console.log("rootNode", rootNode);
   return restoreNode(rootNode, keyMap);
 }
 
 function restoreNode(node: any, keyMap: Map<string, string>): any {
+  // console.log("keyMap", keyMap);
   if (typeof node === "object" && node !== null) {
     if (Array.isArray(node)) {
       return node.map((item) => restoreNode(item, keyMap));
     } else {
       const result: { [key: string]: any } = {};
       for (const [placeholderKey, value] of Object.entries(node)) {
-        const originalKey = keyMap.get(placeholderKey) || placeholderKey;
+        let originalKey = keyMap.get(placeholderKey.trim()) || placeholderKey;
+        originalKey = originalKey;
         result[originalKey] = restoreNode(value, keyMap);
       }
+      // console.log("result", result);
       return result;
     }
   }
@@ -124,13 +135,13 @@ function replacePunctuation(text: string): string {
   text = text.replace(/”/g, '"');
   text = text.replace(/‘/g, "'");
   text = text.replace(/’/g, "'");
-  text = text.replace(/„/g, "\"");//for de
-  text = text.replace(/“/g, "\"");//for de
+  text = text.replace(/„/g, '"'); //for de
+  text = text.replace(/“/g, '"'); //for de
   return text;
 }
 
 function sanitizeJsonString(jsonString: string): string {
-  // 使用你提供的正则表达式来匹配和处理多余的引号
+  // 使用正则表达式来匹配和处理多余的引号
   const sanitizedString = jsonString.replace(
     /([:\[,{]\s*)"(.*?)"(?=\s*[:,\]}])/g,
     (_, p1, p2) => {
@@ -140,4 +151,45 @@ function sanitizeJsonString(jsonString: string): string {
   );
 
   return sanitizedString;
+}
+
+function replaceJsonSymbols(jsonString: string): string {
+  const replacements: { [key: string]: string | undefined } = {
+    "{": "@123@",
+    "}": "@125@",
+    "[": "@91@",
+    "]": "@93@",
+    ",": "@44@",
+    ":": "@58@",
+    '"': "@34@",
+  };
+
+  // 使用正则表达式进行匹配和替换
+  return jsonString.replace(
+    /"|"([^"\\]*(?:\\.[^"\\]*)*)"|([\[\]{},])|:(?!\d)|(:\d+)/g,
+    (match) => {
+      // 返回替换映射中的实体，如果没有特别指定，则不替换
+      return replacements[match] || match;
+    }
+  );
+}
+
+function reverseReplaceSymbols(input: string): string {
+  const replacements: { [key: string]: string } = {
+    "@123@": "{",
+    "@125@": "}",
+    "@91@": "[",
+    "@93@": "]",
+    "@44@": ",",
+    "@58@": ":",
+    "@34@": '"',
+  };
+
+  let result = input;
+
+  for (const [placeholder, original] of Object.entries(replacements)) {
+    result = result.split(placeholder).join(original);
+  }
+
+  return result;
 }
