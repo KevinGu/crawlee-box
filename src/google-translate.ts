@@ -62,15 +62,18 @@ async function translateJson(
   //   content = replacedJson.replace(/"\s*:\s*"/g, '":"');
   // }
 
-  const replacedSymbolsJson: string = replaceJsonSymbols(replacedJson);
+  // const modifiedData = replaceInJsonValue(replacedJson, /&quot;/g, "@quot@");
+
+  console.log("$$$$", replacedJson);
+  const replacedSymbolsJson: string = replaceJsonSymbols(JSON.stringify(replacedJson));
   // console.log("++++++----", content);
-  // console.log("++++++", replacedJSON);
+  console.log("++++++", replacedSymbolsJson);
 
   const processedJsonResponse = await translate(replacedSymbolsJson, options);
-  // console.log("==", processedJsonResponse.text);
+  console.log("==", processedJsonResponse.text);
 
   let processedJsonString = reverseReplaceSymbols(processedJsonResponse.text);
-  // console.log("====", processedJsonString);
+  console.log("====", processedJsonString);
   // processedJsonString = replacePunctuation(processedJsonString);
   // console.log("======", processedJsonString);
   // processedJsonString = sanitizeJsonString(processedJsonString);
@@ -192,4 +195,47 @@ function reverseReplaceSymbols(input: string): string {
   }
 
   return result;
+}
+
+type JsonValue = 
+  | string
+  | number
+  | boolean
+  | JsonObject
+  | JsonArray
+  | null;
+
+interface JsonObject {
+  [key: string]: JsonValue;
+}
+
+interface JsonArray extends Array<JsonValue> {}
+
+/**
+ * 替换 JSON 对象中所有字符串值中的特定字符
+ * @param data 要处理的 JSON 对象
+ * @param target 目标字符（可以是字符串或正则表达式）
+ * @param replacement 替换字符
+ * @returns 修改后的 JSON 对象
+ */
+function replaceInJsonValue(
+  data: JsonValue,
+  target: string | RegExp,
+  replacement: string
+): JsonValue {
+  if (typeof data === 'string') {
+    return data.replace(target, replacement);
+  } else if (Array.isArray(data)) {
+    return data.map(item => replaceInJsonValue(item, target, replacement));
+  } else if (data && typeof data === 'object') {
+    const modifiedObject: JsonObject = {};
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        modifiedObject[key] = replaceInJsonValue(data[key], target, replacement);
+      }
+    }
+    return modifiedObject;
+  }
+  // 对于 number, boolean, null 等类型，直接返回原值
+  return data;
 }
