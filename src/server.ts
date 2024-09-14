@@ -51,17 +51,10 @@ app.post("/scrape-web-content", async (req: Request, res: Response) => {
 });
 
 app.post("/google-translate", async (req: Request, res: Response) => {
-  const { content, src, dst, jsonMode, proxy, type } = req.body;
+  const { content, src, dst, jsonMode, proxy } = req.body;
 
   try {
-    const result = await googleTranslate(
-      content,
-      src,
-      dst,
-      type,
-      jsonMode,
-      proxy
-    );
+    const result = await googleTranslate(content, src, dst, jsonMode, proxy);
     res.json(result);
   } catch (error: any) {
     res.status(500).send(error.message);
