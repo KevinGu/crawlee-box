@@ -31,7 +31,7 @@ export async function googleTranslate(
     };
 
     if (jsonMode) {
-      // 使用新的 JSON 翻译策略
+      // 使用 JSON 翻译策略
       let response = await translateJson(content, options);
       return response;
     } else {
@@ -70,9 +70,9 @@ async function translateJson(
   // 翻译拼接的文本
   const translatedConcatenatedText = await translate(concatenatedText, options);
   const translatedString = translatedConcatenatedText.text.replace(
+    // 移除匹配到的 @ 符号之间的所有空格
     /(@\s*)+/g,
     (match) => {
-      // 移除匹配到的 @ 符号之间的所有空格
       return match.replace(/\s+/g, "");
     }
   );
