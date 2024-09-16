@@ -60,41 +60,54 @@ async function translateJson(
   //console.log("entries:", entries);
 
   // 生成一个独特的分隔符
-  const delimiter = "\n^^";
+  const delimiters = ["^^", "^#", "##", "@@"];
+  for (const delimiter of delimiters) {
+    try {
+      // 拼接所有值为一个字符串
+      const valuesToTranslate = entries.map((entry) => entry.value);
+      const concatenatedText = valuesToTranslate.join(delimiter);
+      // console.log("concatenatedText: ", concatenatedText);
 
-  // 拼接所有值为一个字符串
-  const valuesToTranslate = entries.map((entry) => entry.value);
-  const concatenatedText = valuesToTranslate.join(delimiter);
-  // console.log("concatenatedText: ", concatenatedText);
+      // 翻译拼接的文本
+      const translatedConcatenatedText = await translate(
+        concatenatedText,
+        options
+      );
+      console.log(
+        "translated text: ",
+        translatedConcatenatedText.raw.sentences
+      );
 
-  // 翻译拼接的文本
-  const translatedConcatenatedText = await translate(concatenatedText, options);
-  // console.log("translated text: ",translatedConcatenatedText.raw.sentences)
-  const translatedString = translatedConcatenatedText.text.replace(
-    // 移除匹配到的 @ 符号之间的所有空格
-    /(\^\s*)+/g,
-    (match) => {
-      return match.replace(/\s+/g, "");
+      const translatedString = replaceWithNoSpaces(
+        translatedConcatenatedText.text,
+        delimiter
+      );
+      console.log("translate: ", translatedConcatenatedText.text);
+
+      // 拆分翻译后的文本回单个值
+      const translatedValues = translatedString.split(delimiter);
+      console.log("translate split: ", translatedValues);
+
+      // 确保翻译后的值数量匹配
+      if (translatedValues.length === valuesToTranslate.length) {
+        // 将翻译后的值重新设置回 JSON 对象
+        for (let i = 0; i < entries.length; i++) {
+          setValueAtPath(rootNode, entries[i].path, translatedValues[i]);
+        }
+
+        // 返回更新后的 JSON 对象
+        return rootNode;
+      } else {
+        console.warn(
+          `Delimiter "${delimiter}" mismatch in number of translated values, try next.`
+        );
+      }
+    } catch (error) {
+      console.warn(`Delimiter "${delimiter}" translated error, try next.`);
     }
-  );
-  // console.log("translate: ", translatedConcatenatedText.text);
-
-  // 拆分翻译后的文本回单个值
-  const translatedValues = translatedString.split(delimiter);
-  // console.log("translate split: ", translatedValues);
-
-  // 确保翻译后的值数量匹配
-  if (translatedValues.length !== valuesToTranslate.length) {
-    throw new Error("Mismatch in number of translated values");
   }
 
-  // 将翻译后的值重新设置回 JSON 对象
-  for (let i = 0; i < entries.length; i++) {
-    setValueAtPath(rootNode, entries[i].path, translatedValues[i]);
-  }
-
-  // 返回更新后的 JSON 字符串
-  return rootNode;
+  throw new Error("Mismatch in number of translated values");
 }
 
 // 遍历 JSON 对象，提取值和路径
@@ -123,4 +136,28 @@ function setValueAtPath(obj: any, path: (string | number)[], value: any): void {
     current = current[path[i]];
   }
   current[path[path.length - 1]] = value;
+}
+
+/**
+ * 创建一个正则表达式，允许目标字符串中的字符之间有任意空白字符。
+ * @param {string} target - 目标字符串。
+ * @returns {RegExp} - 构建好的正则表达式。
+ */
+function createRegex(target: string) {
+  // 转义正则表达式中的特殊字符
+  const escaped = target.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+  // 在每个字符之间插入 \s*，允许有任意空白字符
+  const pattern = escaped.split("").join("\\s*");
+  return new RegExp(pattern, "g");
+}
+
+/**
+ * 替换文本中匹配目标字符串（允许中间有空白）的部分为目标字符串本身。
+ * @param {string} text - 原始文本。
+ * @param {string} target - 目标字符串。
+ * @returns {string} - 替换后的文本。
+ */
+function replaceWithNoSpaces(text: string, target: string) {
+  const regex = createRegex(target);
+  return text.replace(regex, target);
 }
