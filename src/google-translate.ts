@@ -60,7 +60,7 @@ async function translateJson(
   //console.log("entries:", entries);
 
   // 生成一个独特的分隔符
-  const delimiter = "^^";
+  const delimiter = "\n^^";
 
   // 拼接所有值为一个字符串
   const valuesToTranslate = entries.map((entry) => entry.value);
@@ -72,7 +72,7 @@ async function translateJson(
   console.log("translated text: ",translatedConcatenatedText.raw.sentences)
   const translatedString = translatedConcatenatedText.text.replace(
     // 移除匹配到的 @ 符号之间的所有空格
-    /(@\s*)+/g,
+    /(\^\s*)+/g,
     (match) => {
       return match.replace(/\s+/g, "");
     }
