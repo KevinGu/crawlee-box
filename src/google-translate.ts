@@ -65,11 +65,11 @@ async function translateJson(
   // 拼接所有值为一个字符串
   const valuesToTranslate = entries.map((entry) => entry.value);
   const concatenatedText = valuesToTranslate.join(delimiter);
-  console.log("concatenatedText: ", concatenatedText);
+  // console.log("concatenatedText: ", concatenatedText);
 
   // 翻译拼接的文本
   const translatedConcatenatedText = await translate(concatenatedText, options);
-  console.log("translated text: ",translatedConcatenatedText.raw.sentences)
+  // console.log("translated text: ",translatedConcatenatedText.raw.sentences)
   const translatedString = translatedConcatenatedText.text.replace(
     // 移除匹配到的 @ 符号之间的所有空格
     /(\^\s*)+/g,
@@ -77,11 +77,11 @@ async function translateJson(
       return match.replace(/\s+/g, "");
     }
   );
-  console.log("translate: ", translatedConcatenatedText.text);
+  // console.log("translate: ", translatedConcatenatedText.text);
 
   // 拆分翻译后的文本回单个值
   const translatedValues = translatedString.split(delimiter);
-  console.log("translate split: ", translatedValues);
+  // console.log("translate split: ", translatedValues);
 
   // 确保翻译后的值数量匹配
   if (translatedValues.length !== valuesToTranslate.length) {
