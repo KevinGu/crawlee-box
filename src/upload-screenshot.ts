@@ -18,6 +18,10 @@ import {
     fileName: string, 
     fileContent: Buffer  
   ): Promise<PutObjectCommandOutput> {
+    console.log('Uploading screenshot to S3...');
+    console.log('endpoint:', process.env.ENDPOINT);
+    console.log('accessKeyId:', process.env.ACCESS_KEY_ID);
+    console.log('secretAccessKey:', process.env.SECRET_ACCESS_KEY);
     const uploadParams = {
       Bucket: bucketName,
       Key: fileName,
