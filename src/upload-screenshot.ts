@@ -3,6 +3,9 @@ import {
     PutObjectCommand,
     PutObjectCommandOutput
   } from "@aws-sdk/client-s3";
+  import * as dotenv from 'dotenv'; 
+  
+dotenv.config();
 
   const S3 = new S3Client({
     region: "auto",
