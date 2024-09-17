@@ -25,6 +25,7 @@ interface WebContentResult {
   } | null;
   screenshot: string | undefined;
   // fullScreenshot: string | undefined;
+  favicon: string | null; // 新增的属性
 }
 
 export async function scrapeWebContent(
@@ -50,7 +51,30 @@ export async function scrapeWebContent(
       );
       return metaDescription ? metaDescription.getAttribute("content") : "";
     });
-    //screenshot
+
+    // 提取 favicon URL
+    let faviconUrl = await page.evaluate(() => {
+      const getFavicon = () => {
+        const linkElements = document.getElementsByTagName("link");
+        for (let i = 0; i < linkElements.length; i++) {
+          const rel = linkElements[i].getAttribute("rel");
+          if (rel && (rel.includes("icon") || rel.includes("shortcut icon"))) {
+            const href = linkElements[i].getAttribute("href");
+            return href;
+          }
+        }
+        return null;
+      };
+
+      return getFavicon();
+    });
+
+    // 处理 favicon 的相对路径，转换为绝对路径
+    if (faviconUrl) {
+      faviconUrl = new URL(faviconUrl, request.url).href;
+    }
+
+    //截图部分
     // let fullScreenshotFileName;
     let screenshotFileName;
     if (screenshot) {
@@ -240,6 +264,7 @@ export async function scrapeWebContent(
       article,
       screenshot: screenshotFileName,
       // fullScreenshot: fullScreenshotFileName,
+      favicon: faviconUrl, // 新增的属性
     });
   };
   // 调用 initializeCrawler 并传入必要的参数，包括泛型类型 SearchResult
