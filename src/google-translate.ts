@@ -73,20 +73,20 @@ async function translateJson(
         concatenatedText,
         options
       );
-      console.log(
-        "translated text: ",
-        translatedConcatenatedText.raw.sentences
-      );
+      // console.log(
+      //   "translated text: ",
+      //   translatedConcatenatedText.raw.sentences
+      // );
 
       const translatedString = replaceWithNoSpaces(
         translatedConcatenatedText.text,
         delimiter
       );
-      console.log("translate: ", translatedConcatenatedText.text);
+      // console.log("translate: ", translatedConcatenatedText.text);
 
       // 拆分翻译后的文本回单个值
       const translatedValues = translatedString.split(delimiter);
-      console.log("translate split: ", translatedValues);
+      // console.log("translate split: ", translatedValues);
 
       // 确保翻译后的值数量匹配
       if (translatedValues.length === valuesToTranslate.length) {
