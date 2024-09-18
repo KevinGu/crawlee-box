@@ -103,7 +103,7 @@ async function translateJson(
         );
       }
     } catch (error) {
-      console.warn(`Delimiter "${delimiter}" translated error, try next.`);
+      console.warn(`Delimiter "${delimiter}" translated error, try next.`, error);
     }
   }
 
