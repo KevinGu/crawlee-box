@@ -60,7 +60,7 @@ async function translateJson(
   //console.log("entries:", entries);
 
   // 生成一个独特的分隔符
-  const delimiters = ["^^", "^#", "##", "@@","__","$$","%%"];
+  const delimiters = ["^^", "^#", "##", "@@","__","$$","%%","<<",">>","~~"];
   for (const delimiter of delimiters) {
     try {
       // 拼接所有值为一个字符串
